@@ -12,7 +12,6 @@ function submit(partId, webSubmit)
     webSubmit = 0; % submit directly by default 
   end
 
-  
   % Check valid partId
   partNames = validParts();
   if ~isValidPartId(partId)
@@ -107,54 +106,51 @@ end
 
 % ================== CONFIGURABLES FOR EACH HOMEWORK ==================
 
-function id = homework_id()
-  id = '1';
+function id = homework_id() 
+  id = '3';
 end
 
 function [partNames] = validParts()
-  partNames = { 'Warm up exercise ', ...
-                'Computing Cost (for one variable)', ...
-                'Gradient Descent (for one variable)', ...
-                'Feature Normalization', ...
-                'Computing Cost (for multiple variables)', ...
-                'Gradient Descent (for multiple variables)', ...
-                'Normal Equations'};
+  partNames = { 'Vectorized Logistic Regression ', ...
+                'One-vs-all classifier training', ...
+                'One-vs-all classifier prediction', ...
+                'Neural network prediction function' ...
+                };
 end
 
 function srcs = sources()
   % Separated by part
-  srcs = { { 'warmUpExercise.m' }, ...
-           { 'computeCost.m' }, ...
-           { 'gradientDescent.m' }, ...
-           { 'featureNormalize.m' }, ...
-           { 'computeCostMulti.m' }, ...
-           { 'gradientDescentMulti.m' }, ...
-           { 'normalEqn.m' }, ...
-         };
+  srcs = { { 'lrCostFunction.m' }, ...
+           { 'oneVsAll.m' }, ...
+           { 'predictOneVsAll.m' }, ...
+           { 'predict.m' } };
 end
 
-function out = output(partId, auxstring)
+function out = output(partId, auxdata)
   % Random Test Cases
-  X1 = [ones(20,1) (exp(1) + exp(2) * (0.1:0.1:2))'];
-  Y1 = X1(:,2) + sin(X1(:,1)) + cos(X1(:,2));
-  X2 = [X1 X1(:,2).^0.5 X1(:,2).^0.25];
-  Y2 = Y1.^0.5 + Y1;
+  X = [ones(20,1) (exp(1) * sin(1:1:20))' (exp(0.5) * cos(1:1:20))'];
+  y = sin(X(:,1) + X(:,2)) > 0;
+  Xm = [ -1 -1 ; -1 -2 ; -2 -1 ; -2 -2 ; ...
+          1 1 ;  1 2 ;  2 1 ; 2 2 ; ...
+         -1 1 ;  -1 2 ;  -2 1 ; -2 2 ; ...
+          1 -1 ; 1 -2 ;  -2 -1 ; -2 -2 ];
+  ym = [ 1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 ]';
+  t1 = sin(reshape(1:2:24, 4, 3));
+  t2 = cos(reshape(1:2:40, 4, 5));
+
   if partId == 1
-    out = sprintf('%0.5f ', warmUpExercise());
+    [J, grad] = lrCostFunction([0.25 0.5 -0.5]', X, y, 0.1);
+    out = sprintf('%0.5f ', J);
+    out = [out sprintf('%0.5f ', grad)];
   elseif partId == 2
-    out = sprintf('%0.5f ', computeCost(X1, Y1, [0.5 -0.5]'));
+    out = sprintf('%0.5f ', oneVsAll(Xm, ym, 4, 0.1));
   elseif partId == 3
-    out = sprintf('%0.5f ', gradientDescent(X1, Y1, [0.5 -0.5]', 0.01, 10));
+    out = sprintf('%0.5f ', predictOneVsAll(t1, Xm));
   elseif partId == 4
-    out = sprintf('%0.5f ', featureNormalize(X2(:,2:4)));
-  elseif partId == 5
-    out = sprintf('%0.5f ', computeCostMulti(X2, Y2, [0.1 0.2 0.3 0.4]'));
-  elseif partId == 6
-    out = sprintf('%0.5f ', gradientDescentMulti(X2, Y2, [-0.1 -0.2 -0.3 -0.4]', 0.01, 10));
-  elseif partId == 7
-    out = sprintf('%0.5f ', normalEqn(X2, Y2));
+    out = sprintf('%0.5f ', predict(t1, t2, Xm));
   end 
 end
+
 
 % ====================== SERVER CONFIGURATION ===========================
 
